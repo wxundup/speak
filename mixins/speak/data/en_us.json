@@ -1,0 +1,5 @@
+{
+  "speak.usage": "Speak: hold your push-to-talk key to speak. Operators can use /speak distance <blocks>.",
+  "speak.distance.invalid": "Speak: distance must be a finite number.",
+  "speak.distance.set": "Speak: server voice distance set to %s blocks."
+}

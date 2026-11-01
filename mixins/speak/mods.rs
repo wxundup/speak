@@ -5,6 +5,10 @@ fn speak_listed(mods: &mut Vec<crate::game::native_hooks::NativeMod>) {
         id: speak::ID.into(),
         title: format!("Speak. {}", speak::VERSION),
         description: speak::DESCRIPTION.into(),
-        keys: vec![[speak::KEY.into(), "Speak key".into(), speak::DEFAULT_KEY.into()]],
+        keys: vec![[
+            speak::KEY.into(),
+            "Speak key".into(),
+            speak::DEFAULT_KEY.into(),
+        ]],
     });
 }

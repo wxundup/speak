@@ -12,5 +12,7 @@ fn speak_key(game: &mut crate::game::Game<'_>, key: &str, pressed: bool) {
     }
     let playing = game.native_playing();
     let game = &*game;
-    speak::key(playing, pressed, |name| game.native_setting(speak::ID, name));
+    speak::key(playing, pressed, |name| {
+        game.native_setting(speak::ID, name)
+    });
 }

@@ -9,6 +9,5 @@ fn speak_world_lifecycle(phase: crate::game::native_lifecycle::WorldPhase) {
         WorldPhase::WorldCloseFinal | WorldPhase::WorldCloseFailed => {
             speak::closed();
         }
-        _ => {}
     }
 }

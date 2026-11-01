@@ -1,55 +1,62 @@
-// The end of each server tick: mix incoming voice and send it to listeners.
+// The end of each server tick: mix the voice packets players sent this tick
+// and send each one to the players near the speaker, in the same dimension.
+// The server's own player table is the authority: what a client said about
+// its position or name is never read, and the speaker never hears itself.
 fn speak_server_tick(
     game: &mut crate::game::Game<'_>,
+    _context: &crate::game::native_lifecycle::NativeLifecycleContext,
     phase: crate::game::native_lifecycle::ServerTickPhase,
 ) {
     use crate::game::native_lifecycle::ServerTickPhase;
     use crate::game::official_speak as speak;
-    if !matches!(
-        phase,
-        crate::game::native_lifecycle::ServerTickPhase::ServerTickEnd { .. }
-    ) {
+    if !matches!(phase, ServerTickPhase::ServerTickEnd { .. }) {
         return;
     }
     if !game.native_on(speak::ID) {
         return;
     }
-    let settings = speak::settings(|k| game.native_setting(speak::ID, k));
-    let tick = 0u64; // TODO: read the current tick from the level
-
+    let tick = speak::tick_server();
+    let settings = {
+        let g = &*game;
+        speak::refresh_settings(|k| g.native_setting(speak::ID, k))
+    };
     let packets = speak::drain_packets();
     let players = game.native_server_players();
 
     for (uuid, data) in packets {
         let Some(packet) = speak::decode_mic_packet(&data) else {
+            continue; // malformed, oversized or trailing: dropped in silence
+        };
+        let Some(sender) = players.iter().find(|p| p.uuid == uuid) else {
             continue;
         };
-        let Some(state) = players.iter().find(|p| p.uuid == uuid).cloned() else {
-            continue;
+        let sound = speak::SoundPacket {
+            sender: sender.uuid,
+            sender_name: sender.name.clone(),
+            dimension: sender.dimension.clone(),
+            position: sender.position,
+            sequence: packet.sequence,
+            data: packet.data.clone(),
         };
-        let distance = if packet.whisper {
-            settings.whisper_distance
-        } else {
-            settings.distance
+        let bytes = match speak::encode_sound_packet(&sound) {
+            Ok(bytes) => bytes,
+            Err(_) => continue,
         };
-        let range = speak::broadcast_range(distance);
-
         for receiver in &players {
             if receiver.uuid == uuid {
-                continue;
+                continue; // no echo to the speaker
             }
-            if !speak::in_range(receiver.position, state.position, range) {
-                continue;
-            }
-            let sound = speak::encode_sound_packet(
-                uuid,
-                state.name.clone(),
-                packet.data.clone(),
-                packet.sequence,
+            if !speak::routes(
+                &receiver.dimension,
+                receiver.position,
+                &sender.dimension,
+                sender.position,
                 packet.whisper,
-                range,
-            );
-            game.native_net_send_to_player(receiver.uuid, speak::CHANNEL, &sound);
+                &settings,
+            ) {
+                continue; // another dimension, or out of range
+            }
+            let _ = game.native_net_send_to_player(receiver.uuid, speak::CHANNEL, &bytes);
         }
     }
 

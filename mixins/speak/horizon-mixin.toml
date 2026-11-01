@@ -3,10 +3,10 @@ id = "speak"
 version = "0.1.0"
 priority = 100
 
-# The commit it was tested on. It uses only the native hook points (hooks 62 in
+# The commit it was tested on. It uses only the native hook points (hooks 80 in
 # compatibility.json): the launcher builds it on any Horizon that has them.
 [compatibility]
-horizon_revision = "c348d5da9c488f1d2453b0d2b03c2751b2379b05"
+horizon_revision = "fcae565042e694cb49dcc024bb6d255572bf1a64"
 
 # The mod's logic, added to the game as `game::official_speak`.
 [[module]]
@@ -14,6 +14,15 @@ id = "runtime"
 file = "crates/horizon-client/src/game.rs"
 name = "official_speak"
 source = "runtime.rs"
+
+# The audio device the client hooks call (owned by the audio half): public,
+# because helpers in the game crate reach it through the render crate.
+[[module]]
+id = "audio"
+file = "crates/horizon-client-render/src/lib.rs"
+name = "official_speak_audio"
+source = "audio.rs"
+visibility = "pub"
 
 # The push-to-talk / voice-activation key went down or up.
 [[injection]]
@@ -76,12 +85,53 @@ bindings = [
 # The end of each server tick: mix incoming voice and send it to listeners.
 [[injection]]
 id = "tick"
+hook = "server_tick"
+hook_version = 1
 kind = "HEAD"
-target = "horizon_client::game::native_hooks::Game<'_>::native_server_tick"
 helper = "server_tick.rs"
 bindings = [
   { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+  { name = "_context", ty = "&crate::game::native_lifecycle::NativeLifecycleContext", value = "context" },
   { name = "phase", ty = "crate::game::native_lifecycle::ServerTickPhase", value = "phase" },
+]
+
+# Once a frame on the window: capture while push-to-talk is held, send the
+# frames, play what arrived.
+[[injection]]
+id = "frame"
+hook = "frame"
+hook_version = 1
+kind = "HEAD"
+helper = "frame.rs"
+bindings = [
+  { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+]
+
+# A player's client sent a voice packet (the server's half of the channel).
+[[injection]]
+id = "net_client"
+hook = "net_from_client"
+hook_version = 1
+kind = "HEAD"
+helper = "net_client.rs"
+bindings = [
+  { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+  { name = "player", ty = "u128", value = "player" },
+  { name = "channel", ty = "&str", value = "channel" },
+  { name = "data", ty = "&[u8]", value = "data" },
+]
+
+# The server sent a player's voice (the window's half of the channel).
+[[injection]]
+id = "net_server"
+hook = "net_from_server"
+hook_version = 1
+kind = "HEAD"
+helper = "net_server.rs"
+bindings = [
+  { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+  { name = "channel", ty = "&str", value = "channel" },
+  { name = "data", ty = "&[u8]", value = "data" },
 ]
 
 # The world opening and closing: start and stop the voice pipeline.

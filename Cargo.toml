@@ -9,3 +9,19 @@ description = "Speak. — a proximity voice chat native mod for Horizon: hold a 
 # The mod's logic and its tests: the same file the bundle adds to the game.
 [lib]
 path = "mixins/speak/runtime.rs"
+
+# cpal, optional so a default build (and the bundle's injected copy without
+# the game's `audio` feature) never links audio backends. The game provides
+# its own cpal 0.16 behind the same feature name.
+[dependencies]
+cpal = { version = "0.16", optional = true }
+
+[features]
+audio = ["dep:cpal"]
+
+# `mixins/speak/audio.rs` is not a module of the lib (the bundle injects it
+# into the game instead); this target compiles it on its own, with and
+# without the `audio` feature, for its synthetic-PCM tests.
+[[test]]
+name = "speak_audio"
+path = "mixins/speak/audio.rs"
