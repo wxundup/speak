@@ -117,42 +117,6 @@ bindings = [
   { name = "ran", ty = "&mut bool", value = "&mut *ran" },
 ]
 
-# A client's voice packet reached the server.
-[[injection]]
-id = "net_from_client"
-kind = "HEAD"
-target = "horizon_client::game::native_hooks::Game<'_>::native_net_from_client"
-helper = "net_from_client.rs"
-bindings = [
-  { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
-  { name = "player", ty = "&crate::game::native_server::NativeServerPlayer", value = "player" },
-  { name = "channel", ty = "&str", value = "channel" },
-  { name = "data", ty = "&[u8]", value = "data" },
-]
-
-# A voice packet from the server reached this client.
-[[injection]]
-id = "net_from_server"
-kind = "HEAD"
-target = "horizon_client::game::native_hooks::Game<'_>::native_net_from_server"
-helper = "net_from_server.rs"
-bindings = [
-  { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
-  { name = "channel", ty = "&str", value = "channel" },
-  { name = "data", ty = "&[u8]", value = "data" },
-]
-
-# Each living player ticks: update voice activity and proximity.
-[[injection]]
-id = "player_tick"
-kind = "HEAD"
-target = "horizon_client::game::native_hooks::Game<'_>::native_player_tick"
-helper = "player_tick.rs"
-bindings = [
-  { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
-  { name = "player", ty = "&crate::game::native_server::NativeServerPlayer", value = "player" },
-]
-
 # Ask for the entity geometry split so the talking overlay can place names.
 [[injection]]
 id = "render_needs"
