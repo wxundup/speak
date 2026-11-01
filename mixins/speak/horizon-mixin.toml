@@ -117,22 +117,4 @@ bindings = [
   { name = "ran", ty = "&mut bool", value = "&mut *ran" },
 ]
 
-# Ask for the entity geometry split so the talking overlay can place names.
-[[injection]]
-id = "render_needs"
-kind = "HEAD"
-target = "horizon_client_render::gfx::native_render::native_render_needs"
-helper = "render_needs.rs"
-bindings = [
-  { name = "needs", ty = "&mut crate::game::native_render::NativeRenderNeeds", value = "&mut *needs" },
-]
 
-# Draw the talking-player overlay over the world.
-[[injection]]
-id = "world_drawn"
-kind = "HEAD"
-target = "horizon_client_render::gfx::native_render::native_world_drawn"
-helper = "world_drawn.rs"
-bindings = [
-  { name = "world", ty = "&crate::game::native_render::WorldDrawn", value = "world" },
-]

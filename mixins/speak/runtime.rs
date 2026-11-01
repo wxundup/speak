@@ -375,11 +375,6 @@ pub fn broadcast_range(distance: f32) -> f32 {
     distance.clamp(MIN_DISTANCE, MAX_DISTANCE)
 }
 
-/// Whether the talking-player overlay is enabled.
-pub fn overlay_enabled() -> bool {
-    STATE.with_borrow(|s| s.settings.is_some())
-}
-
 /// Encodes a mic packet from a level (stub: real Opus framing goes here).
 pub fn encode_mic_packet(_level: f32) -> Vec<u8> {
     Vec::new()

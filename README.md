@@ -31,7 +31,6 @@ Speak. is a proximity voice chat for Horizon: hold a key to talk and the players
 | `mixins/speak/server_tick.rs`, `world_lifecycle.rs`, `register.rs`, `command.rs` | Server voice mixing, world lifecycle, and `/speak` commands |
 | `mixins/speak/net_from_client.rs`, `net_from_server.rs` | Voice packets across the mod channel |
 | `mixins/speak/player_tick.rs` | Per-player voice activity |
-| `mixins/speak/render_needs.rs`, `world_drawn.rs` | Talking-player overlay |
 | `native/tools/native.py` | Shared by the native mods: apply, check, build, package, proof |
 
 ## Build and prove
