@@ -8,7 +8,7 @@ Speak. is a proximity voice chat for Horizon: hold a key to talk and the players
 
 ## Features
 
-- **Proximity voice chat** — players hear you based on in-game distance, like Simple Voice Chat.
+- **Proximity voice chat** — players hear you based on in-game distance.
 - **Push to talk** and **voice activation (VOX)** — pick your mode in settings.
 - **Password protected groups** — talk to players outside your vicinity.
 - **Whispering** — a shorter distance for quiet conversation.
@@ -20,21 +20,6 @@ Speak. is a proximity voice chat for Horizon: hold a key to talk and the players
 - **Commands:** `/speak invite <player>`, `/speak group <name>`, `/speak leave`, `/speak whisper`, `/speak pt`, `/speak vox`.
 - **GUI overlay** — talking players are shown near their heads.
 - **Settings page** — Options > Mods > Speak. > Settings.
-
-## The design
-
-Speak. is a port of the ideas in [Simple Voice Chat](https://github.com/henkelmax/simple-voice-chat) to Horizon's native mod system. Simple Voice Chat runs a separate UDP voice server (port 24454) and encodes microphone audio with Opus/RNNoise. Speak. follows the same architecture but expresses it as Horizon native hook points:
-
-| Simple Voice Chat | Speak. (Horizon native) |
-|---|---|
-| Mic audio capture (OpenAL) | `native_player_tick` reads mic level; `native_net_from_client` sends it |
-| Opus encode/decode | `runtime.rs` Opus frame stubs (to be wired to an audio codec) |
-| UDP voice server (24454) | `native_server_tick` mixes proximity audio over `native_net_*` mod messages |
-| Proximity / whisper distance | `runtime.rs` `in_range()` compares player positions each tick |
-| Groups | `runtime.rs` `Group` type, named password-protected groups |
-| GUI overlay (talking icons) | `world_drawn.rs` draws names above talking players |
-| Settings screen (V key menu) | `settings.rs` / `settings_click.rs` in Options > Mods |
-| Push-to-talk key (V) | `native_key` hook, bound to a player's key |
 
 ## Files
 
