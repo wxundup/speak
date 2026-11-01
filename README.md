@@ -10,7 +10,7 @@ Speak. is a proximity voice chat for Horizon: hold a key to talk and the players
 
 - **Push to talk**, hold V to transmit, release to stop. A new hold restarts the frame stream. PTT only: the settings page may still offer VOX, but Speak. makes no automatic-microphone-activation guarantee.
 - **Real PCM audio**, uncompressed mono PCM16, 48 kHz, 20 ms frames (960 samples, 1 920 bytes). One speaker is ~96,000 bytes/sec before headers (48 000 samples/s × 2 bytes = 50 × 1 920-byte frames/s). The wire codec (`encode_mic_packet` / `decode_mic_packet` / `encode_sound_packet` / `decode_sound_packet`) is pure PCM framing: no Opus, no RNNoise.
-- **Proximity routing**, the server mixes a speaker's PCM to listeners in the same dimension within range (`routes()`), using the server's own player table; what a client claims about its position is not trusted.
+- **Proximity routing**, the server routes a speaker's PCM to listeners in the same dimension within range (`routes()`), using the server's own player table; what a client claims about its position is not trusted.
 
 Not in the MVP (do not expect them): groups and passwords (the group bit is refused), the GUI overlay / talking indicators drawn above heads (state tracked, not rendered), 3D positional sound, a microphone-and-speaker level test UI, and AES or any custom encryption.
 
@@ -60,7 +60,7 @@ There is no claim of any old hooks-62 compatibility: Speak. targets hooks 80 onl
 
 ## Commands
 
-Native two-client PCM proof (parent-owned, repeatable):
+Native PCM routing test (three protocol clients):
 
 ```sh
 python3 tools/native_voice_e2e.py \
@@ -75,7 +75,8 @@ It builds a Rust protocol fixture (`tools/native_voice_client.rs`), joins three 
 - exact nearby delivery (speaker to nearby listener only),
 - far and cross-dimension isolation (distant and nether listeners hear nothing),
 - the Speak command tree is present in every client's command tree,
-- a clean engine stop.
+- operator permission checks and immediate distance changes,
+- translated command feedback and a clean engine stop.
 
 No audio device is opened and this is not acoustic verification: it proves delivered PCM bytes, not sound.
 
@@ -85,9 +86,10 @@ No audio device is opened and this is not acoustic verification: it proves deliv
 |---|---|---|
 | Standalone unit tests | `cargo test --all-targets --all-features` | pass |
 | PCM conversion without devices | `pcm_bytes` / `pcm_samples` / `pcm_level` unit tests | pass |
-| Headless compile | `cargo build -p horizon-client --bin horizon-client --no-default-features` (dedicated) | pass (parent log: logsroot/logs/mvp-headless-second.log) |
-| Full-client compile | `cargo build -p horizon-client --bin horizon-client` (defaults) | running, do not claim until evidence |
-| Real two-client synthetic PCM | `native_voice_e2e.py` three-client localhost engine | running, do not claim until evidence |
+| Headless compile | `cargo build -p horizon-client --bin horizon-client --no-default-features` (dedicated) | pass |
+| Full-client compile | `cargo build -p horizon-client --bin horizon-client` (defaults) | pass |
+| Real synthetic PCM routing | `native_voice_e2e.py` three-client localhost engine, six phases | pass |
+| Launcher server export | Actual `build_server` pipeline, followed by the same six network phases using exported resources | pass (warm toolchain and source cache) |
 | Real mic and listening | human test with actual microphone and speakers | outstanding (manual) |
 
 ## Install
@@ -99,7 +101,7 @@ Build paths are `mixins/speak/` (the bundle and its `horizon-mixin.toml`), not a
 ## Notes
 
 - Native mods run with the player's account permissions and are not sandboxed.
-- Speak. hooks only Horizon's native hook points (hooks contract 80), which keep their names and signatures across releases. `compatibility.json` names the hook API version it needs (`"hooks": 80`); the bundle `horizon-mixin.toml` hardpins the tested revision `cfc7278`. There is no hooks-62 compatibility claim.
+- Speak. hooks only Horizon's native hook points (hooks contract 80), which keep their names and signatures across releases. `compatibility.json` names the hook API version it needs (`"hooks": 80`); the bundle `horizon-mixin.toml` hardpins the tested revision `fcae565`. There is no hooks-62 compatibility claim.
 - Groups/passwords, the GUI overlay, 3D sound, Opus/RNNoise and custom AES are not implemented. The MVP wire format is raw PCM16.
 - Existing game encryption is used only where it is enabled; Speak. adds no custom crypto.
 - License: MIT.
