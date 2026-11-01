@@ -1,0 +1,11 @@
+[package]
+name = "horizon-mod-speak"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+publish = false
+description = "Speak. — a proximity voice chat native mod for Horizon: hold a key to talk, groups to reach further."
+
+# The mod's logic and its tests: the same file the bundle adds to the game.
+[lib]
+path = "mixins/speak/runtime.rs"
