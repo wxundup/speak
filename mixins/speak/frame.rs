@@ -9,12 +9,18 @@ fn speak_frame(game: &mut crate::game::Game<'_>) {
     // The lifecycle phases fire on the server's game, not the window's, so
     // the client resets its own voice state here: out of a world (or of the
     // mod) nothing is captured, played or shown.
-    let playing = game.native_on(speak::ID) && game.native_playing();
-    if !playing {
+    let in_world =
+        game.native_on(speak::ID) && game.native_window() && game.native_player().is_some();
+    if !in_world {
         horizon_client_render::official_speak_audio::stop();
         speak::closed();
         speak::note_capture(false);
         return;
+    }
+    // Chat and inventory keep playback, but release PTT so a key-up consumed
+    // by their controls cannot reopen the microphone when they close.
+    if !game.native_playing() {
+        speak::key(false, false, |k| game.native_setting(speak::ID, k));
     }
     let wanted = speak::talking();
     let tick = speak::tick_local();
@@ -43,7 +49,7 @@ fn speak_frame(game: &mut crate::game::Game<'_>) {
 
     // What the server sent reaches the speakers at the output volume,
     // whether the local player is talking or only listening.
-    if playing {
+    {
         let volume = {
             let g = &*game;
             speak::settings(|k| g.native_setting(speak::ID, k)).volume

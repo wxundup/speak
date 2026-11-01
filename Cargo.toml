@@ -25,3 +25,6 @@ audio = ["dep:cpal"]
 [[test]]
 name = "speak_audio"
 path = "mixins/speak/audio.rs"
+
+[dev-dependencies]
+log = "0.4"

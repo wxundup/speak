@@ -557,9 +557,6 @@ pub fn encode_mic_packet(packet: &MicPacket) -> Result<Vec<u8>, &'static str> {
     if packet.data.len() != MAX_FRAME_BYTES {
         return Err("speak: a PCM frame must contain exactly 960 samples");
     }
-    if packet.data.len() > MAX_FRAME_BYTES {
-        return Err("speak: a PCM frame is at most MAX_FRAME_BYTES");
-    }
     let mut out = Vec::with_capacity(8 + packet.data.len());
     out.push(WIRE_VERSION);
     out.push(u8::from(packet.whisper));
@@ -598,9 +595,6 @@ pub fn decode_mic_packet(data: &[u8]) -> Option<MicPacket> {
 pub fn encode_sound_packet(packet: &SoundPacket) -> Result<Vec<u8>, &'static str> {
     if packet.data.len() != MAX_FRAME_BYTES {
         return Err("speak: a PCM frame must contain exactly 960 samples");
-    }
-    if packet.data.len() > MAX_FRAME_BYTES {
-        return Err("speak: a PCM frame is at most MAX_FRAME_BYTES");
     }
     if !packet.position.iter().all(|c| c.is_finite()) {
         return Err("speak: a position is not finite");
